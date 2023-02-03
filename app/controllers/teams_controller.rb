@@ -43,6 +43,22 @@ class TeamsController < ApplicationController
     end
   end
 
+  # def changeowner
+  #   @team = Team.friendly.find(params[:id])
+
+  #   @team.update(owner_id: params[:assign])
+  #   OwnerChangeMailer.owner_change_mail(@team).deliver
+  #   redirect_to @team, notice: I18n.t('views.messages.update_team')
+  # end
+  #小林さんアドバイス下記2/02
+  def changeowner
+    @team = Team.friendly.find(params[:id])
+    @assign = Assign.find(params[:assign])
+    @team.update(owner_id: @assign.user.id)
+    OwnerChangeMailer.owner_change_mail(@assign.user.email).deliver
+    redirect_to @team, notice: I18n.t('views.messages.update_team')
+  end
+
   def destroy
     @team.destroy
     redirect_to teams_url, notice: I18n.t('views.messages.delete_team')
