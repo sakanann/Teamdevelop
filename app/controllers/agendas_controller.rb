@@ -1,5 +1,5 @@
 class AgendasController < ApplicationController
-  # before_action :set_agenda, only: %i[show edit update destroy]
+  before_action :set_agenda, only: %i[show edit update destroy]
 
   def index
     @agendas = Agenda.all
@@ -20,6 +20,26 @@ class AgendasController < ApplicationController
       render :new
     end
   end
+
+
+  def destroy
+    set_agenda
+    #Agendaの作者もしくはそのAgendaに紐づいているTeamの作者（オーナー）のみであれば削除可
+    #Agendaに紐づいているTeamに所属しているユーザー全員に通知メール
+    if current_user.id == @agenda.user.id || current_user.id == @agenda.team.owner_id
+      @members = @agenda.team.members
+      @agenda.destroy
+      @members.each do |member|
+        AssignMailer.agenda_destroy_mail(member.email).deliver
+        binding.pry
+      end
+      redirect_to dashboard_url
+    end
+  end
+  # if @agenda.user_id == current_user.id || @agenda.team.owner_id == current_user.id
+  #   @agenda.team.members.email
+  #   binding.pry
+  # end
 
   private
 
